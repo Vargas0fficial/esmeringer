@@ -61,6 +61,22 @@
   color: #ffe2ed;
 }
 
+/* Name shown above your own messages */
+.message-author-mine {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  color: #ffe2ed;
+  margin-bottom: 3px;
+}
+
+/* Your own avatar (right side of your bubble) */
+.avatar.mine-avatar {
+  flex-shrink: 0;
+  background: linear-gradient(120deg, #f16b9b, #e84b85);
+  color: #fff;
+}
+
 .message-composer {
   display: flex;
   align-items: center;
