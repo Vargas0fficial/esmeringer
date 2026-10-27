@@ -3,6 +3,7 @@ import {
   collection,
   deleteDoc,
   doc,
+  getDoc,
   limitToLast,
   onSnapshot,
   orderBy,
@@ -15,8 +16,8 @@ import { DAY, MINUTE, expiresIn } from '../lib/expiry';
 
 const memberRef = (slug, uid) => doc(db, 'groups', slug, 'members', uid);
 
-/** Used both to join and as the presence heartbeat. */
-export const joinGroup = (slug, uid, nickname) =>
+/** Presence heartbeat: refreshes your member entry without announcing anything. */
+export const touchMember = (slug, uid, nickname) =>
   setDoc(memberRef(slug, uid), {
     uid,
     nickname,
@@ -24,7 +25,38 @@ export const joinGroup = (slug, uid, nickname) =>
     expireAt: expiresIn(10 * MINUTE),
   });
 
-export const leaveGroup = (slug, uid) => deleteDoc(memberRef(slug, uid));
+function postSystemMessage(slug, uid, nickname, action) {
+  return addDoc(collection(db, 'groups', slug, 'messages'), {
+    senderUid: uid,
+    nickname,
+    text: `${nickname} ${action}`,
+    type: 'system',
+    createdAt: serverTimestamp(),
+    expireAt: expiresIn(DAY),
+  });
+}
+
+/** Joins the room. Announces "has joined the group" only if you weren't already a member. */
+export async function joinGroup(slug, uid, nickname) {
+  let isNew = true;
+  try {
+    isNew = !(await getDoc(memberRef(slug, uid))).exists();
+  } catch {
+    /* if the check fails, treat as new */
+  }
+  await touchMember(slug, uid, nickname);
+  if (isNew) {
+    await postSystemMessage(slug, uid, nickname, 'has joined the group').catch(() => {});
+  }
+}
+
+/** Announces "has left the group", then removes your member entry. */
+export async function leaveGroup(slug, uid, nickname) {
+  if (nickname) {
+    await postSystemMessage(slug, uid, nickname, 'has left the group').catch(() => {});
+  }
+  await deleteDoc(memberRef(slug, uid));
+}
 
 export function watchGroupMembers(slug, onChange) {
   return onSnapshot(

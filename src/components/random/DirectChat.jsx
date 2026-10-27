@@ -17,18 +17,22 @@ export default function DirectChat({ chatId, uid, onExit, onNext }) {
   const [safetyOpen, setSafetyOpen] = useState(false);
 
   const name = room.partner?.nickname || 'Stranger';
+  const myName = room.myProfile?.nickname || 'You';
   const shared = sharedTopics(room.myProfile?.topics, room.partner?.topics);
   const details = [room.partner?.gender, room.partner?.location]
     .filter(Boolean)
     .join(' · ');
 
-  const messages = room.messages.map((m) => ({
-    id: m.id,
-    text: m.text,
-    mine: m.senderUid === uid,
-    author: name,
-    time: formatTime(m.createdAt),
-  }));
+  const messages = room.messages.map((m) => {
+    const mine = m.senderUid === uid;
+    return {
+      id: m.id,
+      text: m.text,
+      mine,
+      author: mine ? myName : name,
+      time: formatTime(m.createdAt),
+    };
+  });
 
   async function leave(goNext) {
     await room.leave();

@@ -4,6 +4,7 @@ import {
   joinGroup,
   leaveGroup,
   sendGroupMessage,
+  touchMember,
   watchGroupMembers,
   watchGroupMessages,
 } from '../services/groupService';
@@ -61,7 +62,9 @@ export function useGroupChat() {
     if (!current) return;
     active.current = null;
     current.stops.forEach((stop) => stop());
-    if (leaveRemote) leaveGroup(current.slug, current.uid).catch(() => {});
+    if (leaveRemote) {
+      leaveGroup(current.slug, current.uid, current.nickname).catch(() => {});
+    }
   }, []);
 
   const join = useCallback(
@@ -87,14 +90,14 @@ export function useGroupChat() {
         setRoom(slug);
         saveActiveGroup(slug, name);
 
-        const current = { slug, uid: user.uid, stops: [] };
+        const current = { slug, uid: user.uid, nickname: name, stops: [] };
         active.current = current;
         current.stops.push(
           watchGroupMessages(slug, setMessages, (e) => setError(e.message)),
         );
         current.stops.push(watchGroupMembers(slug, setMembers));
         const beat = setInterval(() => {
-          joinGroup(slug, user.uid, name).catch(() => {});
+          touchMember(slug, user.uid, name).catch(() => {});
           setNow(Date.now());
         }, HEARTBEAT_MS);
         current.stops.push(() => clearInterval(beat));
@@ -126,7 +129,7 @@ export function useGroupChat() {
     [],
   );
 
-  // After a reload, rejoin the room we were in.
+  // After a reload, rejoin the room we were in (no "joined" message: your member entry still exists).
   useEffect(() => {
     if (restored) join(restored.room, restored.nickname || 'Stranger');
     // eslint-disable-next-line react-hooks/exhaustive-deps

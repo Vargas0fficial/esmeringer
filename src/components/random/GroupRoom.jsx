@@ -16,6 +16,7 @@ export default function GroupRoom({ group }) {
   const messages = group.messages.map((m) => ({
     id: m.id,
     text: m.text,
+    type: m.type,
     mine: m.senderUid === group.uid,
     author: m.nickname || 'Stranger',
     senderUid: m.senderUid,
@@ -49,15 +50,21 @@ export default function GroupRoom({ group }) {
           personal details.
         </div>
         {group.error && <div className="system-message">{group.error}</div>}
-        {messages.map((m) => (
-          <MessageBubble
-            key={m.id}
-            message={m}
-            onAuthorClick={
-              m.mine ? undefined : () => setTarget({ uid: m.senderUid, name: m.author })
-            }
-          />
-        ))}
+        {messages.map((m) =>
+          m.type === 'system' ? (
+            <div key={m.id} className="system-message">
+              {m.text}
+            </div>
+          ) : (
+            <MessageBubble
+              key={m.id}
+              message={m}
+              onAuthorClick={
+                m.mine ? undefined : () => setTarget({ uid: m.senderUid, name: m.author })
+              }
+            />
+          ),
+        )}
       </MessageList>
 
       <Composer onSend={send} placeholder={`Message ${title}...`} />

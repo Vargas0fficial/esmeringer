@@ -102,15 +102,21 @@ service cloud.firestore {
         && validNickname(request.resource.data.nickname);
       allow delete: if isSelf(uid);
     }
-    match /groups/{slug}/messages/{messageId} {
+       match /groups/{slug}/messages/{messageId} {
       allow read: if signedIn() && validSlug(slug);
       allow create: if signedIn() && validSlug(slug)
-        && request.resource.data.keys().hasOnly(['senderUid', 'nickname', 'text', 'createdAt', 'expireAt'])
+        && request.resource.data.keys().hasOnly(['senderUid', 'nickname', 'text', 'type', 'createdAt', 'expireAt'])
         && request.resource.data.senderUid == request.auth.uid
         && validNickname(request.resource.data.nickname)
         && request.resource.data.text is string
         && request.resource.data.text.size() > 0 && request.resource.data.text.size() <= 500
-        && request.resource.data.createdAt == request.time;
+        && request.resource.data.createdAt == request.time
+        && (
+          !('type' in request.resource.data)
+          || (request.resource.data.type == 'system'
+              && (request.resource.data.text == request.resource.data.nickname + ' has joined the group'
+                  || request.resource.data.text == request.resource.data.nickname + ' has left the group'))
+        );
       allow update, delete: if false;
     }
 
