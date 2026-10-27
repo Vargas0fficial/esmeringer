@@ -1,0 +1,116 @@
+/* Shared UI: headings, buttons, segmented control, tags */
+
+.section-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 25px;
+}
+
+.section-heading h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 32px;
+  letter-spacing: -0.7px;
+  margin: 8px 0 7px;
+  color: #392b35;
+}
+
+.section-heading p {
+  font-size: 12px;
+  color: #9a8792;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.online-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: #46c89a;
+  border: 1px solid #fff;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.segmented {
+  display: flex;
+  gap: 4px;
+  background: #f8edf2;
+  border-radius: 10px;
+  padding: 4px;
+}
+
+.segmented button {
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #9d8794;
+  padding: 8px 13px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.segmented button.selected {
+  background: #fff;
+  color: #e44c85;
+  box-shadow: 0 2px 8px #c48da01a;
+}
+
+.primary-button,
+.secondary-button {
+  border: 0;
+  border-radius: 10px;
+  padding: 11px 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.primary-button {
+  color: #fff;
+  background: linear-gradient(110deg, #f16b9c, #df3d7b);
+  box-shadow: 0 5px 14px #e95c9030;
+}
+
+.primary-button:hover {
+  filter: brightness(0.98);
+}
+
+.secondary-button {
+  border: 1px solid #efdde5;
+  background: white;
+  color: #907b88;
+}
+
+.eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.7px;
+  color: #b69ba9;
+}
+
+.icon-button {
+  height: 36px;
+  width: 36px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #f2e4eb;
+  border-radius: 11px;
+  background: #fff;
+  color: #8c7382;
+  position: relative;
+}
+
+.icon-button svg {
+  width: 18px;
+}
+
+.page-content {
+  width: min(1190px, 100%);
+  margin: 0 auto;
+  padding: 34px 38px 28px;
+  flex: 1;
+}

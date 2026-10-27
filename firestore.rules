@@ -1,0 +1,135 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function isSelf(uid) { return signedIn() && request.auth.uid == uid; }
+    function changedOnly(keys) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys);
+    }
+    function validNickname(v) { return v is string && v.size() <= 20; }
+    function validProfile(p) {
+      return validNickname(p.nickname)
+        && p.gender in ['', 'Male', 'Female', 'LGBTQ+']
+        && p.location is string && p.location.size() <= 40
+        && p.topics is list && p.topics.size() <= 5;
+    }
+    function chatPath(id) { return /databases/$(database)/documents/chats/$(id); }
+    function validSlug(s) { return s.matches('^[a-z0-9-]{1,30}$'); }
+
+    // ---- random 1-on-1 waiting list -------------------------------------------------
+    match /queue/{uid} {
+      allow read: if signedIn();
+      allow create: if isSelf(uid)
+        && request.resource.data.keys().hasOnly(
+             ['uid', 'nickname', 'gender', 'location', 'topics', 'status', 'chatId', 'createdAt', 'lastSeen', 'expireAt'])
+        && request.resource.data.uid == uid
+        && validProfile(request.resource.data)
+        && request.resource.data.status == 'waiting'
+        && request.resource.data.chatId == null;
+      allow update: if signedIn() && (
+        (isSelf(uid) && changedOnly(['lastSeen', 'expireAt']))
+        // being matched: only allowed when a real, active chat containing both people is written in the same commit
+        || (resource.data.status == 'waiting'
+            && changedOnly(['status', 'chatId'])
+            && request.resource.data.status == 'matched'
+            && getAfter(chatPath(request.resource.data.chatId)).data.status == 'active'
+            && getAfter(chatPath(request.resource.data.chatId)).data.members.hasAll([uid, request.auth.uid])));
+      allow delete: if isSelf(uid);
+    }
+
+    // ---- 1-on-1 and private chats -----------------------------------------------------
+    match /chats/{chatId} {
+      allow read: if signedIn() && request.auth.uid in resource.data.members;
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['members', 'mode', 'profiles', 'status', 'endedBy', 'createdAt', 'expireAt'])
+        && request.resource.data.members.size() == 2
+        && request.resource.data.members[0] != request.resource.data.members[1]
+        && request.auth.uid in request.resource.data.members
+        && request.resource.data.status == 'active'
+        && request.resource.data.mode in ['one-on-one', 'private']
+        && !exists(/databases/$(database)/documents/blocks/$(request.resource.data.members[0] + '_' + request.resource.data.members[1]))
+        && !exists(/databases/$(database)/documents/blocks/$(request.resource.data.members[1] + '_' + request.resource.data.members[0]));
+      allow update: if signedIn()
+        && request.auth.uid in resource.data.members
+        && resource.data.status == 'active'
+        && changedOnly(['status', 'endedBy'])
+        && request.resource.data.status == 'ended'
+        && request.resource.data.endedBy == request.auth.uid;
+      allow delete: if false;
+
+      match /messages/{messageId} {
+        allow read: if signedIn() && request.auth.uid in get(chatPath(chatId)).data.members;
+        allow create: if signedIn()
+          && request.auth.uid in get(chatPath(chatId)).data.members
+          && get(chatPath(chatId)).data.status == 'active'
+          && request.resource.data.keys().hasOnly(['senderUid', 'text', 'createdAt', 'expireAt'])
+          && request.resource.data.senderUid == request.auth.uid
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0 && request.resource.data.text.size() <= 2000
+          && request.resource.data.createdAt == request.time;
+        allow update, delete: if false;
+      }
+    }
+
+    // ---- private rooms (share a code) ---------------------------------------------------
+    match /privateRooms/{code} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && code.matches('^[A-Z2-9]{6}$')
+        && request.resource.data.keys().hasOnly(['hostUid', 'hostProfile', 'status', 'chatId', 'guestUid', 'createdAt', 'expireAt'])
+        && request.resource.data.hostUid == request.auth.uid
+        && validProfile(request.resource.data.hostProfile)
+        && request.resource.data.status == 'open'
+        && request.resource.data.chatId == null
+        && request.resource.data.guestUid == null;
+      allow update: if signedIn()
+        && resource.data.status == 'open'
+        && changedOnly(['status', 'chatId', 'guestUid'])
+        && request.resource.data.status == 'full'
+        && request.resource.data.guestUid == request.auth.uid
+        && getAfter(chatPath(request.resource.data.chatId)).data.mode == 'private'
+        && getAfter(chatPath(request.resource.data.chatId)).data.members.hasAll([resource.data.hostUid, request.auth.uid]);
+      allow delete: if signedIn() && resource.data.hostUid == request.auth.uid;
+    }
+
+    // ---- public group rooms ---------------------------------------------------------------
+    match /groups/{slug}/members/{uid} {
+      allow read: if signedIn() && validSlug(slug);
+      allow create, update: if isSelf(uid) && validSlug(slug)
+        && request.resource.data.keys().hasOnly(['uid', 'nickname', 'lastSeen', 'expireAt'])
+        && request.resource.data.uid == uid
+        && validNickname(request.resource.data.nickname);
+      allow delete: if isSelf(uid);
+    }
+    match /groups/{slug}/messages/{messageId} {
+      allow read: if signedIn() && validSlug(slug);
+      allow create: if signedIn() && validSlug(slug)
+        && request.resource.data.keys().hasOnly(['senderUid', 'nickname', 'text', 'createdAt', 'expireAt'])
+        && request.resource.data.senderUid == request.auth.uid
+        && validNickname(request.resource.data.nickname)
+        && request.resource.data.text is string
+        && request.resource.data.text.size() > 0 && request.resource.data.text.size() <= 500
+        && request.resource.data.createdAt == request.time;
+      allow update, delete: if false;
+    }
+
+    // ---- safety -------------------------------------------------------------------------------
+    match /reports/{reportId} {
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['reporterUid', 'targetUid', 'chatId', 'groupSlug', 'reason', 'status', 'createdAt'])
+        && request.resource.data.reporterUid == request.auth.uid
+        && request.resource.data.reason is string && request.resource.data.reason.size() <= 80
+        && request.resource.data.status == 'new';
+      allow read, update, delete: if false; // reviewed from the Firebase console / admin tools
+    }
+    match /blocks/{blockId} {
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['blockerUid', 'blockedUid', 'createdAt'])
+        && request.resource.data.blockerUid == request.auth.uid
+        && blockId == request.auth.uid + '_' + request.resource.data.blockedUid;
+      allow read: if signedIn() && resource.data.blockerUid == request.auth.uid;
+      allow update, delete: if false;
+    }
+  }
+}

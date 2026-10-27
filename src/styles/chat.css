@@ -1,0 +1,94 @@
+/* Chat bubbles and composer */
+
+.system-message {
+  align-self: center;
+  background: #fff0f6;
+  color: #b66b88;
+  border-radius: 9px;
+  padding: 9px 13px;
+  font-size: 9px;
+  text-align: center;
+  max-width: 90%;
+}
+
+.message-line {
+  display: flex;
+  align-items: flex-end;
+  gap: 7px;
+  max-width: 85%;
+}
+
+.message-line > img {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.message-line.mine {
+  align-self: flex-end;
+  justify-content: flex-end;
+}
+
+.message-bubble {
+  border-radius: 13px 13px 13px 4px;
+  background: #f5f0f3;
+  padding: 10px 12px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #594653;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.message-bubble small {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 3px;
+  color: #b5a1ad;
+  font-size: 8px;
+  margin-top: 5px;
+}
+
+.mine-bubble {
+  background: linear-gradient(120deg, #f16b9b, #e84b85);
+  color: white;
+  border-radius: 13px 13px 4px 13px;
+}
+
+.mine-bubble small {
+  color: #ffe2ed;
+}
+
+.message-composer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  border-top: 1px solid #f2e4ea;
+}
+
+.message-composer input {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  outline: 0;
+  background: #fff7fa;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 11px;
+  color: #493744;
+}
+
+.send-button {
+  height: 35px;
+  width: 35px;
+  flex-shrink: 0;
+  border: 0;
+  border-radius: 11px;
+  background: #e94f86;
+  color: #fff;
+  display: grid;
+  place-items: center;
+}

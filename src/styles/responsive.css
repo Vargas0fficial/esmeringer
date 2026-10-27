@@ -1,0 +1,45 @@
+/* Responsive breakpoints */
+
+@media (max-width: 1200px) {
+  .page-content {
+    padding: 30px 26px;
+  }
+}
+
+@media (max-width: 760px) {
+  .page-content {
+    padding: 24px 15px;
+  }
+  .section-heading h1 {
+    font-size: 27px;
+  }
+  .section-heading p {
+    font-size: 11px;
+  }
+  .message-line {
+    max-width: 94%;
+  }
+  .random-stage {
+    min-height: 440px;
+  }
+  .random-stage h2 {
+    font-size: 23px;
+  }
+  .random-guidelines {
+    grid-template-columns: 1fr;
+  }
+  .random-guidelines > div {
+    padding: 12px;
+  }
+  .section-heading {
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .segmented button {
+    padding: 8px;
+    font-size: 9px;
+  }
+  .safety-modal {
+    padding: 22px;
+  }
+}

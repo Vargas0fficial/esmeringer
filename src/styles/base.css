@@ -1,0 +1,49 @@
+/* Reset, tokens and form basics */
+
+:root {
+  font-family: 'DM Sans', sans-serif;
+  color: #392b35;
+  background: #fff8fb;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  --pink: #e94f86;
+  --pink-dark: #d93675;
+  --pink-light: #fff0f6;
+  --rose: #f8c6d9;
+  --muted: #8e7d88;
+  --line: #f2dfe7;
+  --white: #fff;
+  --shadow: 0 12px 36px rgba(182, 82, 124, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid #f6a8c7;
+  outline-offset: 2px;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
