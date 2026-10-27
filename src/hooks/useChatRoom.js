@@ -29,11 +29,8 @@ export function useChatRoom(chatId, uid) {
   const send = useCallback((text) => sendChatMessage(chatId, uid, text), [chatId, uid]);
   const leave = useCallback(() => endChat(chatId, uid).catch(() => {}), [chatId, uid]);
 
-  // Closing the tab counts as leaving, so the other person isn't left waiting.
-  useEffect(() => {
-    window.addEventListener('pagehide', leave);
-    return () => window.removeEventListener('pagehide', leave);
-  }, [leave]);
+  // No "end chat on pagehide" here: a reload fires pagehide too, and it would end the chat
+  // you are trying to come back to. The chat now ends only via Leave chat / Next person.
 
   const partnerUid = chat?.members.find((m) => m !== uid) ?? null;
   const ended = chat?.status === 'ended';

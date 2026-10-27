@@ -12,12 +12,41 @@ import { slugify } from '../utils/format';
 
 const HEARTBEAT_MS = 15_000;
 const ONLINE_MS = 45_000;
+const ACTIVE_GROUP_KEY = 'esmering:active-group';
+
+/** The group room this tab is in, kept per-tab so a reload brings you back to it. */
+function loadActiveGroup() {
+  try {
+    const raw = sessionStorage.getItem(ACTIVE_GROUP_KEY);
+    const saved = raw ? JSON.parse(raw) : null;
+    return saved?.room ? saved : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveActiveGroup(room, nickname) {
+  try {
+    sessionStorage.setItem(ACTIVE_GROUP_KEY, JSON.stringify({ room, nickname }));
+  } catch {
+    /* storage unavailable — ignore */
+  }
+}
+
+function clearActiveGroup() {
+  try {
+    sessionStorage.removeItem(ACTIVE_GROUP_KEY);
+  } catch {
+    /* ignore */
+  }
+}
 
 /** Public group rooms. `room` is the room id while joined, otherwise null. */
 export function useGroupChat() {
-  const [room, setRoom] = useState(null);
+  const [restored] = useState(loadActiveGroup);
+  const [room, setRoom] = useState(restored?.room ?? null);
   const [uid, setUid] = useState(null);
-  const [nickname, setNickname] = useState('');
+  const [nickname, setNickname] = useState(restored?.nickname ?? '');
   const [messages, setMessages] = useState([]);
   const [members, setMembers] = useState([]);
   const [hidden, setHidden] = useState(() => new Set());
@@ -26,12 +55,13 @@ export function useGroupChat() {
   const [busy, setBusy] = useState(false);
   const active = useRef(null);
 
-  const teardown = useCallback(() => {
+  // leaveRemote=false keeps your member entry (used on reload / tab close).
+  const teardown = useCallback((leaveRemote = true) => {
     const current = active.current;
     if (!current) return;
     active.current = null;
     current.stops.forEach((stop) => stop());
-    leaveGroup(current.slug, current.uid).catch(() => {});
+    if (leaveRemote) leaveGroup(current.slug, current.uid).catch(() => {});
   }, []);
 
   const join = useCallback(
@@ -55,6 +85,7 @@ export function useGroupChat() {
         setMessages([]);
         setMembers([]);
         setRoom(slug);
+        saveActiveGroup(slug, name);
 
         const current = { slug, uid: user.uid, stops: [] };
         active.current = current;
@@ -69,6 +100,9 @@ export function useGroupChat() {
         current.stops.push(() => clearInterval(beat));
       } catch (e) {
         setError(e.message);
+        // Failed to (re)join: fall back to the setup screen.
+        setRoom(null);
+        clearActiveGroup();
       } finally {
         setBusy(false);
       }
@@ -78,6 +112,7 @@ export function useGroupChat() {
 
   const leave = useCallback(() => {
     teardown();
+    clearActiveGroup();
     setRoom(null);
   }, [teardown]);
 
@@ -91,10 +126,17 @@ export function useGroupChat() {
     [],
   );
 
+  // After a reload, rejoin the room we were in.
   useEffect(() => {
-    window.addEventListener('pagehide', teardown);
+    if (restored) join(restored.room, restored.nickname || 'Stranger');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const onPageHide = () => teardown(false);
+    window.addEventListener('pagehide', onPageHide);
     return () => {
-      window.removeEventListener('pagehide', teardown);
+      window.removeEventListener('pagehide', onPageHide);
       teardown();
     };
   }, [teardown]);
