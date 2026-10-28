@@ -114,3 +114,20 @@
   padding: 34px 38px 28px;
   flex: 1;
 }
+/* Handwriting logo used as a page title */
+.heading-logo .writing-logo {
+  display: block;
+  width: 230px;
+  max-width: 100%;
+  height: auto;
+  margin: 4px 0 6px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

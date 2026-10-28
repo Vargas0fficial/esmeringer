@@ -16,6 +16,9 @@
   .section-heading p {
     font-size: 11px;
   }
+  .heading-logo .writing-logo {
+    width: 180px;
+  }
   .message-line {
     max-width: 94%;
   }

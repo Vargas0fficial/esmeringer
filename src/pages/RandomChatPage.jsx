@@ -100,6 +100,7 @@ export default function RandomChatPage() {
   return (
     <>
       <SectionHeading
+        logo
         eyebrow="A LITTLE MYSTERY"
         title="Esmeringer"
         subtitle="One person, one conversation, a brand-new possibility."
