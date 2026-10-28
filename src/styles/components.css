@@ -9,10 +9,10 @@
 
 .section-heading h1 {
   font-family: 'Playfair Display', serif;
-  font-size: 32px;
   letter-spacing: -0.7px;
-  margin: 8px 0 7px;
   color: #392b35;
+  font-size: 32px;
+  margin: 8px 0 7px;
 }
 
 .section-heading p {

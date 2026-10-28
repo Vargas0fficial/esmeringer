@@ -102,7 +102,7 @@ function GroupOptions({ setup, ready, customRoom, onCustomRoom, onJoin }) {
           value={customRoom}
           onChange={(e) => onCustomRoom(e.target.value)}
           maxLength={30}
-          placeholder="e.g. Esmeringer"
+          placeholder="e.g. Pangasinan"
         />
       </Field>
       <button

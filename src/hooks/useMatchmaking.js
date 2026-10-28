@@ -70,6 +70,9 @@ export function useMatchmaking() {
       setPhase('searching');
       try {
         const user = await ensureUser();
+        // Clear any stale queue entry left over from an earlier session,
+        // otherwise joining becomes an "update" and the rules reject it.
+        await leaveQueue(user.uid).catch(() => {});
         const blocked = await fetchBlockedIds(user.uid);
         if (attempt.current !== thisAttempt) return; // cancelled while connecting
 
@@ -115,6 +118,7 @@ export function useMatchmaking() {
         tick();
       } catch (e) {
         if (attempt.current !== thisAttempt) return;
+        console.error('Start random chat failed:', e);
         setError(e.message);
         setPhase('idle');
       }
