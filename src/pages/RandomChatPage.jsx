@@ -101,7 +101,7 @@ export default function RandomChatPage() {
     <>
       <SectionHeading
         eyebrow="A LITTLE MYSTERY"
-        title="Random chat"
+        title="Esmeringer"
         subtitle="One person, one conversation, a brand-new possibility."
       />
 
