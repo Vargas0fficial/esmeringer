@@ -203,6 +203,7 @@
   border: 1px solid #efdee6;
   border-radius: 9px;
   background: #fffdfd;
+  font-family: inherit;
   font-size: 11px;
   color: #4a3643;
   padding: 11px 12px;
@@ -381,6 +382,7 @@
   padding: 11px 12px;
   border: 1px solid #efdee6;
   border-radius: 9px;
+  font-family: inherit;
   font-size: 12px;
   letter-spacing: 3px;
   text-transform: uppercase;

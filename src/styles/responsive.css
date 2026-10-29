@@ -14,7 +14,7 @@
     font-size: 27px;
   }
   .section-heading p {
-    font-size: 11px;
+    font-size: 13px;
   }
   .heading-logo .writing-logo {
     width: 180px;
@@ -47,11 +47,57 @@
   }
 }
 
-/* Touch devices: iOS Safari zooms into any focused field with a font under 16px. */
+/* Same font on every form control (selects ignore the page font by default). */
+input,
+select,
+textarea,
+button {
+  font-family: inherit;
+}
+
+/*
+ * Touch devices: iOS Safari zooms into any focused field with a font under 16px,
+ * so inputs are 16px. The rest of the setup form is scaled up to stay in proportion.
+ */
 @media (hover: none) and (pointer: coarse) {
   input,
   select,
   textarea {
     font-size: 16px !important;
+  }
+
+  .setup-card .setup-intro {
+    font-size: 14px;
+  }
+  .setup-card .setup-label-row label {
+    font-size: 14px;
+  }
+  .setup-card .setup-label-row small {
+    font-size: 12px;
+  }
+  .setup-card .setup-hint,
+  .setup-card .or-row {
+    font-size: 12px;
+  }
+  .setup-card .segmented button {
+    font-size: 14px;
+    padding: 10px 8px;
+  }
+  .setup-card .topic-chip {
+    font-size: 13px;
+    padding: 6px 9px;
+  }
+  .setup-card .setup-consent {
+    font-size: 14px;
+  }
+  .setup-card .room-picker button {
+    font-size: 14px;
+  }
+  .setup-card .setup-error {
+    font-size: 13px;
+  }
+  .setup-card .setup-submit,
+  .setup-card .secondary-button {
+    font-size: 15px;
   }
 }
