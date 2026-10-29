@@ -35,12 +35,14 @@ export default function DirectChat({ chatId, uid, onExit, onNext }) {
   });
 
   async function leave(goNext) {
+    room.stopTyping();
     await room.leave();
     if (goNext) onNext();
     else onExit();
   }
 
   async function send(text) {
+    room.stopTyping();
     try {
       await room.send(text);
     } catch (error) {
@@ -80,7 +82,7 @@ export default function DirectChat({ chatId, uid, onExit, onNext }) {
         </button>
       </div>
 
-      <MessageList trigger={`${messages.length}-${room.ended}`}>
+      <MessageList trigger={`${messages.length}-${room.ended}-${room.partnerTyping}`}>
         <div className="system-message">
           You’re chatting with {name}.
           {shared.length > 0 && <> You both like {shared.join(', ')}.</>} Be respectful,
@@ -89,6 +91,17 @@ export default function DirectChat({ chatId, uid, onExit, onNext }) {
         {messages.map((m) => (
           <MessageBubble key={m.id} message={m} />
         ))}
+        {room.partnerTyping && (
+          <div className="message-line typing-line" aria-live="polite">
+            <Avatar name={name} size={26} />
+            <div className="message-bubble theirs typing-bubble">
+              <span className="typing-dot" />
+              <span className="typing-dot" />
+              <span className="typing-dot" />
+              <span className="visually-hidden">{name} is typing</span>
+            </div>
+          </div>
+        )}
         {room.ended && (
           <div className="system-message">
             {room.endedByPartner ? `${name} left the chat.` : 'You left the chat.'}
@@ -96,12 +109,15 @@ export default function DirectChat({ chatId, uid, onExit, onNext }) {
         )}
       </MessageList>
 
-            <Composer
-        onSend={send}
-        placeholder={room.ended ? 'This chat has ended' : 'Say something nice...'}
-        disabled={room.ended}
-        maxLength={2000}
-      />
+      {/* onInput bubbles up from the composer's text field, so Composer needs no changes. */}
+      <div style={{ display: 'contents' }} onInput={room.notifyTyping}>
+        <Composer
+          onSend={send}
+          placeholder={room.ended ? 'This chat has ended' : 'Say something nice...'}
+          disabled={room.ended}
+          maxLength={2000}
+        />
+      </div>
 
       <div className="random-controls">
         <button className="secondary-button" onClick={() => leave(false)}>

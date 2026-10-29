@@ -70,6 +70,17 @@ service cloud.firestore {
           && request.resource.data.createdAt == request.time;
         allow update, delete: if false;
       }
+
+      // "is typing" status, one small doc per person
+      match /typing/{uid} {
+        allow read: if signedIn() && request.auth.uid in get(chatPath(chatId)).data.members;
+        allow create, update: if isSelf(uid)
+          && request.auth.uid in get(chatPath(chatId)).data.members
+          && request.resource.data.keys().hasOnly(['uid', 'typing', 'updatedAt', 'expireAt'])
+          && request.resource.data.uid == uid
+          && request.resource.data.typing is bool;
+        allow delete: if false;
+      }
     }
 
     // ---- private rooms (share a code) ---------------------------------------------------
@@ -102,7 +113,7 @@ service cloud.firestore {
         && validNickname(request.resource.data.nickname);
       allow delete: if isSelf(uid);
     }
-       match /groups/{slug}/messages/{messageId} {
+    match /groups/{slug}/messages/{messageId} {
       allow read: if signedIn() && validSlug(slug);
       allow create: if signedIn() && validSlug(slug)
         && request.resource.data.keys().hasOnly(['senderUid', 'nickname', 'text', 'type', 'createdAt', 'expireAt'])

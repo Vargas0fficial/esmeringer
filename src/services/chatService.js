@@ -7,6 +7,7 @@ import {
   orderBy,
   query,
   serverTimestamp,
+  setDoc,
   updateDoc,
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
@@ -65,3 +66,24 @@ export function sendChatMessage(chatId, uid, text) {
 
 export const endChat = (chatId, uid) =>
   updateDoc(doc(db, 'chats', chatId), { status: 'ended', endedBy: uid });
+
+const typingRef = (chatId, uid) => doc(db, 'chats', chatId, 'typing', uid);
+
+/** Marks you as typing (true) or idle (false). */
+export const setTyping = (chatId, uid, typing) =>
+  setDoc(typingRef(chatId, uid), {
+    uid,
+    typing,
+    updatedAt: serverTimestamp(),
+    expireAt: expiresIn(DAY),
+  });
+
+/** Watches one person's typing status. */
+export function watchTyping(chatId, uid, onChange) {
+  return onSnapshot(
+    typingRef(chatId, uid),
+    (snap) =>
+      onChange(snap.exists() ? snap.data({ serverTimestamps: 'estimate' }) : null),
+    () => {},
+  );
+}
