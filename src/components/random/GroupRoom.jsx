@@ -8,10 +8,17 @@ import SafetyModal from '../SafetyModal';
 import { useToast } from '../../context/ToastContext';
 import { formatTime, roomTitle } from '../../utils/format';
 
+function typingText(names) {
+  if (names.length === 1) return `${names[0]} is typing`;
+  if (names.length === 2) return `${names[0]} and ${names[1]} are typing`;
+  return 'Several people are typing';
+}
+
 export default function GroupRoom({ group }) {
   const { showToast } = useToast();
   const [target, setTarget] = useState(null);
   const title = roomTitle(group.room);
+  const typing = group.typingNames.length > 0 ? typingText(group.typingNames) : '';
 
   const messages = group.messages.map((m) => ({
     id: m.id,
@@ -44,7 +51,7 @@ export default function GroupRoom({ group }) {
         </div>
       </div>
 
-      <MessageList trigger={messages.length}>
+      <MessageList trigger={`${messages.length}-${typing}`}>
         <div className="system-message">
           Everyone here is a stranger. Tap a name to report or block, and never share
           personal details.
@@ -65,9 +72,20 @@ export default function GroupRoom({ group }) {
             />
           ),
         )}
+        {typing && (
+          <div className="typing-status" aria-live="polite">
+            <span className="typing-dot" />
+            <span className="typing-dot" />
+            <span className="typing-dot" />
+            <span>{typing}</span>
+          </div>
+        )}
       </MessageList>
 
-      <Composer onSend={send} placeholder={`Message ${title}...`} />
+      {/* onInput bubbles up from the composer's text field, so Composer needs no changes. */}
+      <div style={{ display: 'contents' }} onInput={group.notifyTyping}>
+        <Composer onSend={send} placeholder={`Message ${title}...`} />
+      </div>
 
       <div className="random-controls">
         <button className="secondary-button" onClick={group.leave}>

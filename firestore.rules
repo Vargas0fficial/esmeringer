@@ -131,6 +131,17 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // "is typing" status in group rooms, one small doc per person
+    match /groups/{slug}/typing/{uid} {
+      allow read: if signedIn() && validSlug(slug);
+      allow create, update: if isSelf(uid) && validSlug(slug)
+        && request.resource.data.keys().hasOnly(['uid', 'nickname', 'typing', 'updatedAt', 'expireAt'])
+        && request.resource.data.uid == uid
+        && validNickname(request.resource.data.nickname)
+        && request.resource.data.typing is bool;
+      allow delete: if false;
+    }
+
     // ---- safety -------------------------------------------------------------------------------
     match /reports/{reportId} {
       allow create: if signedIn()

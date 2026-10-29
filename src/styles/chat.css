@@ -192,3 +192,15 @@
   color: #fff;
   font-weight: 600;
 }
+/* Group "is typing" line */
+.typing-status {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: #b5a1ad;
+}
+
+.typing-status span:last-child {
+  margin-left: 4px;
+}

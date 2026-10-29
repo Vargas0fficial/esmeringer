@@ -15,6 +15,7 @@ import { db } from '../lib/firebase';
 import { DAY, MINUTE, expiresIn } from '../lib/expiry';
 
 const memberRef = (slug, uid) => doc(db, 'groups', slug, 'members', uid);
+const typingRef = (slug, uid) => doc(db, 'groups', slug, 'typing', uid);
 
 /** Presence heartbeat: refreshes your member entry without announcing anything. */
 export const touchMember = (slug, uid, nickname) =>
@@ -56,6 +57,25 @@ export async function leaveGroup(slug, uid, nickname) {
     await postSystemMessage(slug, uid, nickname, 'has left the group').catch(() => {});
   }
   await deleteDoc(memberRef(slug, uid));
+}
+
+/** Marks you as typing (true) or idle (false) in a group room. */
+export const setGroupTyping = (slug, uid, nickname, typing) =>
+  setDoc(typingRef(slug, uid), {
+    uid,
+    nickname,
+    typing,
+    updatedAt: serverTimestamp(),
+    expireAt: expiresIn(DAY),
+  });
+
+export function watchGroupTyping(slug, onChange) {
+  return onSnapshot(
+    collection(db, 'groups', slug, 'typing'),
+    (snap) =>
+      onChange(snap.docs.map((d) => d.data({ serverTimestamps: 'estimate' }))),
+    (error) => console.warn('Typing listener:', error.message),
+  );
 }
 
 export function watchGroupMembers(slug, onChange) {
