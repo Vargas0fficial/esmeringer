@@ -119,6 +119,11 @@ export default function RandomChatPage() {
           </div>
         ))}
       </div>
+
+      <p className="name-origin">
+       FYI. Esmeringer comes from the famous word “Esmeringhoy”, which means “Bembang”
+        HAHAHA
+      </p>
     </>
   );
 }

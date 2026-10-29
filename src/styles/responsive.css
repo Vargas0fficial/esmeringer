@@ -100,4 +100,7 @@ button {
   .setup-card .secondary-button {
     font-size: 15px;
   }
+  .name-origin {
+    font-size: 12px;
+  }
 }

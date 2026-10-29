@@ -15,6 +15,7 @@
   min-height: 415px;
 }
 
+/* Decorative rings behind the card; they gently "breathe" */
 .random-stage:before,
 .random-stage:after {
   content: '';
@@ -23,11 +24,26 @@
   border-radius: 50%;
   width: 330px;
   height: 330px;
+  pointer-events: none;
+  animation: ring-pulse 5s ease-in-out infinite;
 }
 
 .random-stage:after {
   width: 440px;
   height: 440px;
+  animation-delay: -2.5s;
+}
+
+@keyframes ring-pulse {
+  0%,
+  100% {
+    transform: scale(0.94);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.06);
+    opacity: 1;
+  }
 }
 
 .random-stage h2 {
@@ -485,4 +501,17 @@
     stroke-dashoffset: 0;
     fill-opacity: 1;
   }
+
+  .random-stage:before,
+  .random-stage:after {
+    animation: none;
+  }
+}
+/* Little note about where the name comes from */
+.name-origin {
+  margin: 18px 0 4px;
+  text-align: center;
+  font-size: 10px;
+  line-height: 1.6;
+  color: #b29eaa;
 }
