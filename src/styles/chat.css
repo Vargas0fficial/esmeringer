@@ -107,3 +107,23 @@
   background: linear-gradient(120deg, #f16b9b, #e84b85);
   color: #fff;
 }
+/* Chat ended: grey dot and a clearly disabled composer */
+.online-dot.offline {
+  background: #c9b6c0 !important;
+}
+
+.message-composer input:disabled {
+  background: #f1ebee;
+  color: #a999a2;
+  cursor: not-allowed;
+}
+
+.message-composer input:disabled::placeholder {
+  color: #b5a1ad;
+}
+
+.send-button:disabled {
+  background: #d9c5ce;
+  opacity: 1;
+  cursor: not-allowed;
+}

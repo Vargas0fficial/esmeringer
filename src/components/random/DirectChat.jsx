@@ -96,9 +96,9 @@ export default function DirectChat({ chatId, uid, onExit, onNext }) {
         )}
       </MessageList>
 
-      <Composer
+            <Composer
         onSend={send}
-        placeholder="Say something nice..."
+        placeholder={room.ended ? 'This chat has ended' : 'Say something nice...'}
         disabled={room.ended}
         maxLength={2000}
       />
