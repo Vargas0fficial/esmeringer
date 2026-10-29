@@ -18,7 +18,9 @@ export default function DirectChat({ chatId, uid, onExit, onNext }) {
 
   const name = room.partner?.nickname || 'Stranger';
   const myName = room.myProfile?.nickname || 'You';
-  const shared = sharedTopics(room.myProfile?.topics, room.partner?.topics);
+  const partnerTopics = room.partner?.topics ?? [];
+  const shared = sharedTopics(room.myProfile?.topics, partnerTopics);
+  const sharedKeys = new Set(shared.map((t) => t.trim().toLowerCase()));
   const details = [room.partner?.gender, room.partner?.location]
     .filter(Boolean)
     .join(' · ');
@@ -88,6 +90,21 @@ export default function DirectChat({ chatId, uid, onExit, onNext }) {
           {shared.length > 0 && <> You both like {shared.join(', ')}.</>} Be respectful,
           and keep personal details private.
         </div>
+        {partnerTopics.length > 0 && (
+          <div className="partner-topics">
+            <span className="partner-topics-label">{name} likes</span>
+            {partnerTopics.map((topic) => (
+              <span
+                key={topic}
+                className={`partner-topic-chip ${
+                  sharedKeys.has(topic.trim().toLowerCase()) ? 'shared' : ''
+                }`}
+              >
+                {topic}
+              </span>
+            ))}
+          </div>
+        )}
         {messages.map((m) => (
           <MessageBubble key={m.id} message={m} />
         ))}

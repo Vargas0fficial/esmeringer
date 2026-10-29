@@ -163,3 +163,32 @@
     opacity: 1;
   }
 }
+/* Partner's topics, shared ones highlighted */
+.partner-topics {
+  align-self: center;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  max-width: 90%;
+}
+
+.partner-topics-label {
+  font-size: 9px;
+  color: #b5a1ad;
+}
+
+.partner-topic-chip {
+  font-size: 10px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #f5f0f3;
+  color: #7a6573;
+}
+
+.partner-topic-chip.shared {
+  background: linear-gradient(120deg, #f16b9b, #e84b85);
+  color: #fff;
+  font-weight: 600;
+}
