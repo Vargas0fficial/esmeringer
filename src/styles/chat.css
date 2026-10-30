@@ -204,3 +204,22 @@
 .typing-status span:last-child {
   margin-left: 4px;
 }
+/* One consistent font and size across every chat view (1-on-1, private, group) */
+.random-chat-box,
+.random-chat-box * {
+  font-family: inherit;
+}
+
+.random-chat-box .message-bubble,
+.random-chat-box .system-message {
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.random-chat-box .random-person strong {
+  font-size: 12px;
+}
+
+.random-chat-box .random-person small {
+  font-size: 9px;
+}
