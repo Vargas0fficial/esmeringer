@@ -146,4 +146,36 @@ button {
   .random-chat-box .random-controls button {
     font-size: 15px;
   }
+
+  /* Video call: mic, camera, Leave and Next person stay on one row */
+  .video-overlay {
+    font-size: 14px;
+  }
+  .setup-card .video-note {
+    font-size: 12px;
+  }
+  .video-controls {
+    flex-wrap: nowrap;
+    gap: 8px;
+    padding: 16px 12px calc(20px + env(safe-area-inset-bottom, 0px));
+  }
+  .video-controls .icon-button {
+    width: 44px;
+    height: 44px;
+  }
+  .video-controls .secondary-button,
+  .video-controls .primary-button {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 0 10px;
+    font-size: 14px;
+    justify-content: center;
+    white-space: nowrap;
+    margin-left: 0;
+  }
 }
+  .random-chat-box .video-controls {
+    flex-wrap: nowrap;
+    gap: 8px;
+    padding: 20px 12px calc(22px + env(safe-area-inset-bottom, 0px));
+  }

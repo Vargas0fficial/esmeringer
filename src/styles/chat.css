@@ -300,3 +300,77 @@
 .video-note {
   line-height: 1.6;
 }
+/* Video call buttons: more breathing room */
+.video-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 14px 12px;
+  padding: 22px 18px 24px;
+}
+
+/* mic and camera sit together as a pair, Leave and Next as another */
+.video-controls .icon-button {
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+}
+
+.video-controls .secondary-button,
+.video-controls .primary-button {
+  min-height: 46px;
+  padding: 0 20px;
+}
+
+.video-controls .secondary-button {
+  margin-left: 0;
+}
+/* Space between the video and its buttons (wins over .random-controls) */
+.random-chat-box .video-controls {
+  padding-top: 22px;
+  padding-bottom: 22px;
+}
+/* ---- Video call inside the white card ---- */
+.video-box {
+  display: flex;
+  flex-direction: column;
+}
+
+.video-box .video-stage {
+  position: relative;
+  width: auto;
+  margin: 16px 16px 0;
+  aspect-ratio: 4 / 3;
+  max-height: 420px;
+  max-height: min(420px, 58dvh);
+  border-radius: 14px;
+  overflow: hidden;
+  isolation: isolate; /* keeps the blur from leaking past the rounded edges */
+  background: #2b1d26;
+  flex-shrink: 0;
+}
+
+.video-box .video-remote {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #2b1d26;
+}
+
+.video-box .video-remote.blurred {
+  filter: blur(24px);
+  transform: scale(1.15);
+}
+
+.video-box .video-local {
+  right: 10px;
+  bottom: 10px;
+  border-radius: 10px;
+}
+
+.random-chat-box .video-controls {
+  padding: 20px 16px 22px;
+}
