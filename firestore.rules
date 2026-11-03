@@ -15,6 +15,7 @@ service cloud.firestore {
         && p.topics is list && p.topics.size() <= 5;
     }
     function chatPath(id) { return /databases/$(database)/documents/chats/$(id); }
+    function callPath(id) { return /databases/$(database)/documents/videoCalls/$(id); }
     function validSlug(s) { return s.matches('^[a-z0-9-]{1,30}$'); }
 
     // ---- random 1-on-1 waiting list -------------------------------------------------
@@ -80,6 +81,59 @@ service cloud.firestore {
           && request.resource.data.uid == uid
           && request.resource.data.typing is bool;
         allow delete: if false;
+      }
+    }
+
+    // ---- random video waiting list ----------------------------------------------------
+    match /videoQueue/{uid} {
+      allow read: if signedIn();
+      allow create: if isSelf(uid)
+        && request.resource.data.keys().hasOnly(
+             ['uid', 'nickname', 'status', 'callId', 'createdAt', 'lastSeen', 'expireAt'])
+        && request.resource.data.uid == uid
+        && validNickname(request.resource.data.nickname)
+        && request.resource.data.status == 'waiting'
+        && request.resource.data.callId == null;
+      allow update: if signedIn() && (
+        (isSelf(uid) && changedOnly(['lastSeen', 'expireAt']))
+        || (resource.data.status == 'waiting'
+            && changedOnly(['status', 'callId'])
+            && request.resource.data.status == 'matched'
+            && getAfter(callPath(request.resource.data.callId)).data.status == 'active'
+            && getAfter(callPath(request.resource.data.callId)).data.members.hasAll([uid, request.auth.uid])));
+      allow delete: if isSelf(uid);
+    }
+
+    // ---- video calls + WebRTC signaling ----------------------------------------------
+    match /videoCalls/{callId} {
+      allow read: if signedIn() && request.auth.uid in resource.data.members;
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['members', 'profiles', 'status', 'endedBy', 'createdAt', 'expireAt'])
+        && request.resource.data.members.size() == 2
+        && request.resource.data.members[0] != request.resource.data.members[1]
+        && request.auth.uid in request.resource.data.members
+        && request.resource.data.status == 'active'
+        && !exists(/databases/$(database)/documents/blocks/$(request.resource.data.members[0] + '_' + request.resource.data.members[1]))
+        && !exists(/databases/$(database)/documents/blocks/$(request.resource.data.members[1] + '_' + request.resource.data.members[0]));
+      allow update: if signedIn()
+        && request.auth.uid in resource.data.members
+        && resource.data.status == 'active'
+        && changedOnly(['status', 'endedBy'])
+        && request.resource.data.status == 'ended'
+        && request.resource.data.endedBy == request.auth.uid;
+      allow delete: if false;
+
+      match /signals/{signalId} {
+        allow read: if signedIn() && request.auth.uid in get(callPath(callId)).data.members;
+        allow create: if signedIn()
+          && request.auth.uid in get(callPath(callId)).data.members
+          && request.resource.data.keys().hasOnly(['from', 'type', 'data', 'createdAt', 'expireAt'])
+          && request.resource.data.from == request.auth.uid
+          && request.resource.data.type in ['offer', 'answer', 'candidate']
+          && request.resource.data.data is string
+          && request.resource.data.data.size() <= 20000
+          && request.resource.data.createdAt == request.time;
+        allow update, delete: if false;
       }
     }
 

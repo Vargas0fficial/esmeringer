@@ -18,6 +18,10 @@ const COPY = {
     title: 'Who do you want to talk to?',
     intro: 'Everything below is optional. Skip it and you’ll be paired with anyone.',
   },
+  video: {
+    title: 'Random video chat',
+    intro: 'Meet someone face to face. Their video stays hidden until you choose to show it.',
+  },
   group: {
     title: 'Pick a room',
     intro: 'Public rooms are open to anyone. Join one and say hi.',
@@ -78,6 +82,15 @@ function RandomOptions({ setup, onChange }) {
         <TopicsInput topics={setup.topics} onChange={(topics) => onChange({ topics })} />
       </Field>
     </>
+  );
+}
+
+function VideoOptions() {
+  return (
+    <p className="setup-hint video-note">
+      Your camera and microphone turn on when you start, and the other person can see and
+      hear you. Never show personal details, and report anyone who makes you uncomfortable.
+    </p>
   );
 }
 
@@ -166,6 +179,7 @@ export default function SetupCard({
     event.preventDefault();
     if (!ready) return;
     if (mode === 'one-on-one') actions.startRandom();
+    else if (mode === 'video') actions.startVideo();
     else if (mode === 'group' && customRoom.trim()) actions.joinGroup(customRoom);
     else if (mode === 'private' && code.trim().length === PRIVATE_CODE_LENGTH)
       actions.joinPrivate(code);
@@ -192,6 +206,7 @@ export default function SetupCard({
       </Field>
 
       {mode === 'one-on-one' && <RandomOptions setup={setup} onChange={onChange} />}
+      {mode === 'video' && <VideoOptions />}
       {mode === 'group' && (
         <GroupOptions
           setup={setup}
@@ -222,6 +237,11 @@ export default function SetupCard({
       {mode === 'one-on-one' && (
         <button className="primary-button setup-submit" disabled={!ready}>
           Start random chat
+        </button>
+      )}
+      {mode === 'video' && (
+        <button className="primary-button setup-submit" disabled={!ready}>
+          Start video chat
         </button>
       )}
 

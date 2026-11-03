@@ -6,12 +6,14 @@ import GroupRoom from '../components/random/GroupRoom';
 import PrivateWaiting from '../components/random/PrivateWaiting';
 import SearchingView from '../components/random/SearchingView';
 import SetupCard from '../components/random/SetupCard';
+import VideoChat from '../components/random/VideoChat';
 import SectionHeading from '../components/SectionHeading';
 import { ANYWHERE } from '../config/constants';
 import { useChatSetup } from '../hooks/useChatSetup';
 import { useGroupChat } from '../hooks/useGroupChat';
 import { useMatchmaking } from '../hooks/useMatchmaking';
 import { usePrivateRoom } from '../hooks/usePrivateRoom';
+import { useVideoCall } from '../hooks/useVideoCall';
 import { firebaseConfigured } from '../lib/firebase';
 
 const GUIDELINES = [
@@ -20,12 +22,15 @@ const GUIDELINES = [
   { icon: Flag, title: 'Speak up', text: 'Report behavior that feels wrong.' },
 ];
 
+const VIDEO_PHASES = ['connecting', 'chatting', 'ended'];
+
 export default function RandomChatPage() {
   const { setup, nicknameDraft, setNickname, update } = useChatSetup();
   const [mode, setMode] = useState('one-on-one');
   const random = useMatchmaking();
   const priv = usePrivateRoom();
   const group = useGroupChat();
+  const video = useVideoCall();
 
   const randomProfile = {
     nickname: setup.nickname,
@@ -33,7 +38,7 @@ export default function RandomChatPage() {
     location: setup.location,
     topics: setup.topics,
   };
-  // Private rooms and group chats only share a nickname.
+  // Private rooms, group chats and video only share a nickname.
   const plainProfile = {
     nickname: setup.nickname,
     gender: '',
@@ -43,18 +48,35 @@ export default function RandomChatPage() {
 
   const actions = {
     startRandom: () => random.start(randomProfile),
+    startVideo: () => video.start(plainProfile),
     createPrivate: () => priv.create(plainProfile),
     joinPrivate: (code) => priv.join(code, plainProfile),
     joinGroup: (name) => group.join(name, setup.nickname || 'Stranger'),
   };
 
-  const errors = { 'one-on-one': random.error, group: group.error, private: priv.error };
+  const errors = {
+    'one-on-one': random.error,
+    video: video.error,
+    group: group.error,
+    private: priv.error,
+  };
   const busy = priv.busy || group.busy;
 
   let view;
   let inChat = true;
   if (!firebaseConfigured) {
     view = <ConfigNotice />;
+  } else if (video.phase === 'searching') {
+    view = <SearchingView onCancel={video.cancel} />;
+  } else if (VIDEO_PHASES.includes(video.phase)) {
+    view = (
+      <VideoChat
+        key={video.callId}
+        video={video}
+        onExit={video.reset}
+        onNext={() => video.next(plainProfile)}
+      />
+    );
   } else if (random.phase === 'searching') {
     view = <SearchingView onCancel={random.cancel} />;
   } else if (random.phase === 'chatting') {
@@ -121,7 +143,7 @@ export default function RandomChatPage() {
       </div>
 
       <p className="name-origin">
-       FYI. Esmeringer comes from the famous word “Esmeringhoy”, which means “Bembang”
+        Esmeringer comes from the famous word “esmeringhoy”, which means “bembang”
         HAHAHA
       </p>
     </>

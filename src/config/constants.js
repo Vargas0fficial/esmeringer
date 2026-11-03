@@ -35,6 +35,7 @@ export const PH_LOCATIONS = [
 
 export const CHAT_MODES = [
   { id: 'one-on-one', label: '1-on-1' },
+  { id: 'video', label: 'Video' },
   { id: 'group', label: 'Group' },
   { id: 'private', label: 'Private' },
 ];

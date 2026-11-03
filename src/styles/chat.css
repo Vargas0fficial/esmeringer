@@ -223,3 +223,80 @@
 .random-chat-box .random-person small {
   font-size: 9px;
 }
+/* ---- Video chat ---- */
+.video-stage {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  max-height: 60vh;
+  max-height: 60dvh;
+  width: 100%;
+  background: #2b1d26;
+  overflow: hidden;
+}
+
+.video-remote {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #2b1d26;
+  transition: filter 0.3s ease;
+}
+
+.video-remote.blurred {
+  filter: blur(28px);
+  transform: scale(1.1);
+}
+
+.video-local {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  width: 28%;
+  max-width: 130px;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 2px solid #ffffffb0;
+  background: #1c1218;
+  transform: scaleX(-1); /* mirror your own preview */
+  z-index: 2;
+}
+
+.video-local.cam-off {
+  opacity: 0.25;
+}
+
+.video-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 12px;
+  padding: 20px;
+  text-align: center;
+  color: #fff;
+  font-size: 12px;
+  line-height: 1.5;
+  background: #2b1d2699;
+}
+
+.video-overlay p {
+  margin: 0;
+}
+
+.video-controls {
+  flex-wrap: wrap;
+  align-items: center;
+  padding-top: 14px;
+}
+
+.video-controls .icon-button.off {
+  background: #fff0f0;
+  color: #bc3d55;
+}
+
+.video-note {
+  line-height: 1.6;
+}
