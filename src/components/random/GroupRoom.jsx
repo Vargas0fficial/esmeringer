@@ -82,10 +82,11 @@ export default function GroupRoom({ group }) {
         )}
       </MessageList>
 
-      {/* onInput bubbles up from the composer's text field, so Composer needs no changes. */}
-      <div style={{ display: 'contents' }} onInput={group.notifyTyping}>
-        <Composer onSend={send} placeholder={`Message ${title}...`} />
-      </div>
+      <Composer
+        onSend={send}
+        onTyping={group.notifyTyping}
+        placeholder={`Message ${title}...`}
+      />
 
       <div className="random-controls">
         <button className="secondary-button" onClick={group.leave}>

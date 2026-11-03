@@ -16,11 +16,10 @@ import { slugify } from '../utils/format';
 const HEARTBEAT_MS = 15_000;
 const ONLINE_MS = 45_000;
 const ACTIVE_GROUP_KEY = 'esmering:active-group';
-const TYPING_REFRESH_MS = 3000; // how often "typing" is re-sent while you keep typing
-const TYPING_IDLE_MS = 2500; // stop showing "typing" after this much silence
-const TYPING_STALE_MS = 6000; // ignore typing flags older than this
+const TYPING_REFRESH_MS = 3000;
+const TYPING_IDLE_MS = 2500;
+const TYPING_STALE_MS = 6000;
 
-/** The group room this tab is in, kept per-tab so a reload brings you back to it. */
 function loadActiveGroup() {
   try {
     const raw = sessionStorage.getItem(ACTIVE_GROUP_KEY);
@@ -35,7 +34,7 @@ function saveActiveGroup(room, nickname) {
   try {
     sessionStorage.setItem(ACTIVE_GROUP_KEY, JSON.stringify({ room, nickname }));
   } catch {
-    /* storage unavailable — ignore */
+    /* ignore */
   }
 }
 
@@ -63,8 +62,8 @@ export function useGroupChat() {
   const active = useRef(null);
   const lastSent = useRef(0);
   const idleTimer = useRef(null);
+  const seen = useRef(new Map()); // uid -> { key, receivedAt }
 
-  // ---- typing indicator ----
   const stopTyping = useCallback(() => {
     clearTimeout(idleTimer.current);
     const current = active.current;
@@ -90,7 +89,6 @@ export function useGroupChat() {
     idleTimer.current = setTimeout(stopTyping, TYPING_IDLE_MS);
   }, [stopTyping]);
 
-  // leaveRemote=false keeps your member entry (used on reload / tab close).
   const teardown = useCallback((leaveRemote = true) => {
     const current = active.current;
     if (!current) return;
@@ -124,6 +122,7 @@ export function useGroupChat() {
         setMessages([]);
         setMembers([]);
         setTypingDocs([]);
+        seen.current = new Map();
         setRoom(slug);
         saveActiveGroup(slug, name);
 
@@ -135,8 +134,17 @@ export function useGroupChat() {
         current.stops.push(watchGroupMembers(slug, setMembers));
         current.stops.push(
           watchGroupTyping(slug, (docs) => {
-            setNow(Date.now());
-            setTypingDocs(docs);
+            const received = Date.now();
+            // Use our own clock for "when did this arrive", so a wrong device clock can't hide it.
+            const next = docs.map((d) => {
+              const key = `${d.typing}-${d.updatedAt?.toMillis?.() ?? 0}`;
+              const prev = seen.current.get(d.uid);
+              const receivedAt = prev && prev.key === key ? prev.receivedAt : received;
+              seen.current.set(d.uid, { key, receivedAt });
+              return { uid: d.uid, nickname: d.nickname, typing: d.typing, receivedAt };
+            });
+            setNow(received);
+            setTypingDocs(next);
           }),
         );
         const beat = setInterval(() => {
@@ -146,7 +154,6 @@ export function useGroupChat() {
         current.stops.push(() => clearInterval(beat));
       } catch (e) {
         setError(e.message);
-        // Failed to (re)join: fall back to the setup screen.
         setRoom(null);
         clearActiveGroup();
       } finally {
@@ -176,7 +183,6 @@ export function useGroupChat() {
     [],
   );
 
-  // After a reload, rejoin the room we were in (no "joined" message: your member entry still exists).
   useEffect(() => {
     if (restored) join(restored.room, restored.nickname || 'Stranger');
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -192,11 +198,10 @@ export function useGroupChat() {
     };
   }, [teardown]);
 
-  // While someone is typing, re-check regularly so stale flags disappear on their own.
   const anyoneTyping = typingDocs.some((t) => t.typing);
   useEffect(() => {
     if (!anyoneTyping) return undefined;
-    const timer = setInterval(() => setNow(Date.now()), 2000);
+    const timer = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(timer);
   }, [anyoneTyping]);
 
@@ -210,7 +215,7 @@ export function useGroupChat() {
         t.typing &&
         t.uid !== uid &&
         !hidden.has(t.uid) &&
-        now - (t.updatedAt?.toMillis?.() ?? now) < TYPING_STALE_MS,
+        now - t.receivedAt < TYPING_STALE_MS,
     )
     .map((t) => t.nickname || 'Stranger');
 
